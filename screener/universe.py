@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-_BUNDLED_CSV = Path(__file__).parent.parent.parent / "neo_api_client" / "api" / "nse_cm.csv"
+_BUNDLED_CSV = Path(__file__).parent.parent / "neo_api_client" / "api" / "nse_cm.csv"
 
 
 def load_universe() -> list[dict]:
