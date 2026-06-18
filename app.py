@@ -451,7 +451,7 @@ if results:
         return color
 
     gain_cols = ["1D%", "1W%", "1M%", "3M%"]
-    styled = df_sorted.style.applymap(_colour_gain, subset=gain_cols).format(
+    styled = df_sorted.style.map(_colour_gain, subset=gain_cols).format(
         {c: "{:.2f}" for c in gain_cols if c in df_sorted.columns}
     ).format({"CMP": "₹{:.2f}"})
 
