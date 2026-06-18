@@ -177,6 +177,51 @@ def _get_current_conditions() -> list:
     return result
 
 
+def _side_to_english(tf: str, ind: str, per: int, ago: int) -> str:
+    ind_label = {
+        "wma": f"WMA({per})", "close": "Close", "open": "Open",
+        "high": "High", "low": "Low", "volume": "Volume",
+    }.get(ind, ind.capitalize())
+    ago_label = ""
+    if ago > 0:
+        unit = {"daily": "days ago", "weekly": "weeks ago", "monthly": "months ago"}.get(tf, "bars ago")
+        ago_label = f" [{ago} {unit}]"
+    return f"{tf.capitalize()} {ind_label}{ago_label}"
+
+
+def _condition_to_english(i: int, cond: dict) -> str:
+    """Build a plain-English summary from live widget state (falls back to cond dict)."""
+    left_tf  = st.session_state.get(f"c{i}_ltf",  cond["left"].get("timeframe", "daily"))
+    left_ind = st.session_state.get(f"c{i}_lind", cond["left"].get("indicator", "close"))
+    left_per = int(st.session_state.get(f"c{i}_lper", cond["left"].get("period", 1)))
+    left_ago = int(st.session_state.get(f"c{i}_lago", cond["left"].get("offset_periods", 0)))
+    op       = st.session_state.get(f"c{i}_op",   cond.get("op", ">"))
+    rtype    = st.session_state.get(f"c{i}_rtype",
+                                    "Number" if cond["right"]["type"] == "number" else "Indicator")
+
+    left_str = _side_to_english(left_tf, left_ind, left_per, left_ago)
+
+    op_words = {">": "is greater than", ">=": "is greater than or equal to",
+                "<": "is less than", "<=": "is less than or equal to", "==": "equals"}
+    op_str = op_words.get(op, op)
+
+    if rtype == "Number":
+        val = float(st.session_state.get(f"c{i}_rval", cond["right"].get("value", 0)))
+        right_str = f"{val:,.0f}" if left_ind == "volume" else f"₹{val:,.0f}"
+    else:
+        right_tf  = st.session_state.get(f"c{i}_rtf",  cond["right"].get("timeframe", "daily"))
+        right_ind = st.session_state.get(f"c{i}_rind", cond["right"].get("indicator", "close"))
+        right_per = int(st.session_state.get(f"c{i}_rper", cond["right"].get("period", 1)))
+        right_ago = int(st.session_state.get(f"c{i}_rag",  cond["right"].get("offset_periods", 0)))
+        right_abs = float(st.session_state.get(f"c{i}_rabs", cond["right"].get("abs_offset", 0.0)))
+        right_str = _side_to_english(right_tf, right_ind, right_per, right_ago)
+        if right_abs != 0:
+            sign = "+" if right_abs > 0 else "-"
+            right_str += f" {sign} ₹{abs(right_abs):g}"
+
+    return f"**{left_str}** {op_str} **{right_str}**"
+
+
 def _render_condition_row(i: int, cond: dict):
     """Draw one condition row inside an expander. Returns whether Remove was clicked."""
     left  = cond.get("left",  {})
@@ -229,6 +274,7 @@ def _render_condition_row(i: int, cond: dict):
         rc5.number_input("+₹ offset", value=float(right.get("abs_offset", 0.0)),
                          key=f"c{i}_rabs")
 
+    st.caption(f"📖 {_condition_to_english(i, cond)}")
     remove = st.button(f"🗑 Remove condition {i + 1}", key=f"remove_{i}")
     st.divider()
     return remove
