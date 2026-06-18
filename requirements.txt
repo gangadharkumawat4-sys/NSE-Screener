@@ -1,0 +1,11 @@
+streamlit>=1.35
+yfinance>=0.2.40
+pandas>=2.2
+numpy>=2.1
+pyarrow>=16.0
+python-dotenv>=1.0
+requests>=2.32
+PyJWT>=2.6
+websocket-client>=1.8
+bidict>=0.22
+pyjsparser>=2.7
