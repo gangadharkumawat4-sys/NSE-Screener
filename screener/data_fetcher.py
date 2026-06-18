@@ -1,4 +1,5 @@
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from pathlib import Path
 
@@ -99,5 +100,45 @@ def fetch_live_prices_kotak(
                         pass
         except Exception:
             pass
+
+    return results
+
+
+def fetch_market_caps(tickers: list[str], max_workers: int = 30) -> dict[str, float]:
+    """
+    Fetch market cap (in ₹ Crores) for all tickers using yfinance fast_info.
+    Results are cached per day. Returns {yf_ticker: mcap_in_crores}.
+    """
+    _CACHE_DIR.mkdir(exist_ok=True)
+    cache_file = _CACHE_DIR / f"mcap_{date.today().isoformat()}.parquet"
+
+    if cache_file.exists():
+        try:
+            return pd.read_parquet(cache_file)["mcap_cr"].to_dict()
+        except Exception:
+            pass
+
+    results: dict[str, float] = {}
+
+    def _get_one(ticker: str):
+        try:
+            mc = yf.Ticker(ticker).fast_info.market_cap
+            if mc and mc > 0:
+                return ticker, mc / 1e7  # rupees → crores
+        except Exception:
+            pass
+        return ticker, None
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = {ex.submit(_get_one, t): t for t in tickers}
+        for fut in as_completed(futures):
+            ticker, val = fut.result()
+            if val is not None:
+                results[ticker] = round(val, 2)
+
+    try:
+        pd.DataFrame.from_dict(results, orient="index", columns=["mcap_cr"]).to_parquet(cache_file)
+    except Exception:
+        pass
 
     return results

@@ -25,7 +25,7 @@ def _secret(key: str) -> str:
         return os.getenv(key, "")
 
 from screener.universe import load_universe
-from screener.data_fetcher import fetch_ohlc_batch, fetch_live_prices_kotak
+from screener.data_fetcher import fetch_ohlc_batch, fetch_live_prices_kotak, fetch_market_caps
 from screener.filters import run_screener
 
 PRESETS_DIR = DASH / "presets"
@@ -301,6 +301,17 @@ with st.sidebar:
 
     st.divider()
 
+    # ── Market Cap filter ──
+    st.subheader("🏦 Market Cap Filter (₹ Cr)")
+    mcap_col1, mcap_col2 = st.columns(2)
+    mcap_min = mcap_col1.number_input("Min (₹ Cr)", min_value=0, value=0, step=100,
+                                       help="0 = no lower limit")
+    mcap_max = mcap_col2.number_input("Max (₹ Cr)", min_value=0, value=0, step=100,
+                                       help="0 = no upper limit")
+    enable_mcap = st.checkbox("Apply Market Cap filter", value=False)
+
+    st.divider()
+
     # ── Sort options ──
     st.subheader("📊 Sort results by")
     sort_col = st.radio("Sort by gain", ["1M%", "3M%", "1W%", "1D%"],
@@ -402,6 +413,12 @@ if run_scan:
             live_prices = fetch_live_prices_kotak(kotak_client, psymbols)
             st.write(f"Live prices fetched for {len(live_prices)} stocks")
 
+        market_caps = {}
+        if enable_mcap:
+            st.write("Fetching market cap data (cached daily)…")
+            market_caps = fetch_market_caps(tickers)
+            st.write(f"Market cap loaded for {len(market_caps)} stocks")
+
         st.write("Applying filters…")
         progress_bar = st.progress(0)
         progress_text = st.empty()
@@ -417,6 +434,9 @@ if run_scan:
             stock_universe=universe,
             conditions=current_conditions,
             live_prices=live_prices if live_prices else None,
+            market_caps=market_caps if enable_mcap else None,
+            mcap_min_cr=float(mcap_min) if enable_mcap and mcap_min > 0 else None,
+            mcap_max_cr=float(mcap_max) if enable_mcap and mcap_max > 0 else None,
             progress_callback=_on_progress,
         )
 

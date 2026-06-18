@@ -16,6 +16,9 @@ def run_screener(
     stock_universe: list[dict],
     conditions: list[dict],
     live_prices: dict = None,
+    market_caps: dict = None,
+    mcap_min_cr: float = None,
+    mcap_max_cr: float = None,
     progress_callback=None,
 ) -> list[dict]:
     """
@@ -45,6 +48,16 @@ def run_screener(
         if apply_conditions(df, conditions) is not True:
             continue
 
+        # Market cap filter
+        if market_caps is not None and (mcap_min_cr is not None or mcap_max_cr is not None):
+            mcap = market_caps.get(stock["yf_ticker"])
+            if mcap is None:
+                continue
+            if mcap_min_cr is not None and mcap < mcap_min_cr:
+                continue
+            if mcap_max_cr is not None and mcap > mcap_max_cr:
+                continue
+
         close = df["Close"].dropna()
         current_price = float(close.iloc[-1])
 
@@ -54,11 +67,16 @@ def run_screener(
             if lp and lp["ltp"] > 0:
                 current_price = lp["ltp"]
 
+        mcap_cr = None
+        if market_caps:
+            mcap_cr = market_caps.get(stock["yf_ticker"])
+
         results.append(
             {
                 "Symbol": stock["pTrdSymbol"].rsplit("-", 1)[0],
                 "Name": stock["full_name"],
                 "CMP": round(current_price, 2),
+                "Mkt Cap (₹Cr)": round(mcap_cr, 0) if mcap_cr else None,
                 "1D%": _pct_gain(close, 1, current_price),
                 "1W%": _pct_gain(close, 5, current_price),
                 "1M%": _pct_gain(close, 22, current_price),
