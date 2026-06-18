@@ -40,32 +40,32 @@ DEFAULT_CONDITIONS = [
     {
         "left":  {"timeframe": "daily",   "indicator": "wma",    "period": 1,  "offset_periods": 0},
         "op":    ">",
-        "right": {"type": "indicator",    "timeframe": "monthly", "indicator": "wma", "period": 2, "offset_periods": 0, "abs_offset": 1.0},
+        "right": {"type": "indicator",    "timeframe": "monthly", "indicator": "wma", "period": 2, "offset_periods": 0, "pct_offset": 1.0},
     },
     {
         "left":  {"timeframe": "monthly", "indicator": "wma",    "period": 2,  "offset_periods": 0},
         "op":    ">",
-        "right": {"type": "indicator",    "timeframe": "monthly", "indicator": "wma", "period": 4, "offset_periods": 0, "abs_offset": 2.0},
+        "right": {"type": "indicator",    "timeframe": "monthly", "indicator": "wma", "period": 4, "offset_periods": 0, "pct_offset": 2.0},
     },
     {
         "left":  {"timeframe": "daily",   "indicator": "wma",    "period": 1,  "offset_periods": 0},
         "op":    ">",
-        "right": {"type": "indicator",    "timeframe": "weekly",  "indicator": "wma", "period": 6, "offset_periods": 0, "abs_offset": 2.0},
+        "right": {"type": "indicator",    "timeframe": "weekly",  "indicator": "wma", "period": 6, "offset_periods": 0, "pct_offset": 2.0},
     },
     {
         "left":  {"timeframe": "weekly",  "indicator": "wma",    "period": 6,  "offset_periods": 0},
         "op":    ">",
-        "right": {"type": "indicator",    "timeframe": "weekly",  "indicator": "wma", "period": 12, "offset_periods": 0, "abs_offset": 2.0},
+        "right": {"type": "indicator",    "timeframe": "weekly",  "indicator": "wma", "period": 12, "offset_periods": 0, "pct_offset": 2.0},
     },
     {
         "left":  {"timeframe": "daily",   "indicator": "wma",    "period": 1,  "offset_periods": 0},
         "op":    ">",
-        "right": {"type": "indicator",    "timeframe": "daily",   "indicator": "wma", "period": 12, "offset_periods": 4, "abs_offset": 2.0},
+        "right": {"type": "indicator",    "timeframe": "daily",   "indicator": "wma", "period": 12, "offset_periods": 4, "pct_offset": 2.0},
     },
     {
         "left":  {"timeframe": "daily",   "indicator": "wma",    "period": 1,  "offset_periods": 0},
         "op":    ">",
-        "right": {"type": "indicator",    "timeframe": "daily",   "indicator": "wma", "period": 20, "offset_periods": 2, "abs_offset": 2.0},
+        "right": {"type": "indicator",    "timeframe": "daily",   "indicator": "wma", "period": 20, "offset_periods": 2, "pct_offset": 2.0},
     },
     {
         "left":  {"timeframe": "daily",   "indicator": "close",  "period": 1,  "offset_periods": 0},
@@ -165,12 +165,12 @@ def _get_current_conditions() -> list:
             right_ind = st.session_state.get(f"c{i}_rind", "close")
             right_per = int(st.session_state.get(f"c{i}_rper", 1))
             right_ago = int(st.session_state.get(f"c{i}_rag",  0))
-            right_abs = float(st.session_state.get(f"c{i}_rabs", 0.0))
+            right_abs = float(st.session_state.get(f"c{i}_rpct", 0.0))
             right = {
                 "type": "indicator",
                 "timeframe": right_tf, "indicator": right_ind,
                 "period": right_per, "offset_periods": right_ago,
-                "abs_offset": right_abs,
+                "pct_offset": right_abs,
             }
 
         result.append({"left": left, "op": op_val, "right": right})
@@ -213,11 +213,11 @@ def _condition_to_english(i: int, cond: dict) -> str:
         right_ind = st.session_state.get(f"c{i}_rind", cond["right"].get("indicator", "close"))
         right_per = int(st.session_state.get(f"c{i}_rper", cond["right"].get("period", 1)))
         right_ago = int(st.session_state.get(f"c{i}_rag",  cond["right"].get("offset_periods", 0)))
-        right_abs = float(st.session_state.get(f"c{i}_rabs", cond["right"].get("abs_offset", 0.0)))
+        right_pct = float(st.session_state.get(f"c{i}_rpct", cond["right"].get("pct_offset", 0.0)))
         right_str = _side_to_english(right_tf, right_ind, right_per, right_ago)
-        if right_abs != 0:
-            sign = "+" if right_abs > 0 else "-"
-            right_str += f" {sign} ₹{abs(right_abs):g}"
+        if right_pct != 0:
+            sign = "+" if right_pct > 0 else "-"
+            right_str += f" {sign} {abs(right_pct):g}%"
 
     return f"**{left_str}** {op_str} **{right_str}**"
 
@@ -271,8 +271,8 @@ def _render_condition_row(i: int, cond: dict):
         rc4.number_input("N ago", min_value=0, max_value=200,
                          value=int(right.get("offset_periods", 0)),
                          key=f"c{i}_rag")
-        rc5.number_input("+₹ offset", value=float(right.get("abs_offset", 0.0)),
-                         key=f"c{i}_rabs")
+        rc5.number_input("+% offset", value=float(right.get("pct_offset", 0.0)),
+                         key=f"c{i}_rpct")
 
     st.caption(f"📖 {_condition_to_english(i, cond)}")
     remove = st.button(f"🗑 Remove condition {i + 1}", key=f"remove_{i}")

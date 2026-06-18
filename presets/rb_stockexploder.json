@@ -4,32 +4,32 @@
     {
       "left":  {"timeframe": "daily",   "indicator": "wma", "period": 1,  "offset_periods": 0},
       "op":    ">",
-      "right": {"type": "indicator", "timeframe": "monthly", "indicator": "wma", "period": 2,  "offset_periods": 0, "abs_offset": 1.0}
+      "right": {"type": "indicator", "timeframe": "monthly", "indicator": "wma", "period": 2,  "offset_periods": 0, "pct_offset": 1.0}
     },
     {
       "left":  {"timeframe": "monthly", "indicator": "wma", "period": 2,  "offset_periods": 0},
       "op":    ">",
-      "right": {"type": "indicator", "timeframe": "monthly", "indicator": "wma", "period": 4,  "offset_periods": 0, "abs_offset": 2.0}
+      "right": {"type": "indicator", "timeframe": "monthly", "indicator": "wma", "period": 4,  "offset_periods": 0, "pct_offset": 2.0}
     },
     {
       "left":  {"timeframe": "daily",   "indicator": "wma", "period": 1,  "offset_periods": 0},
       "op":    ">",
-      "right": {"type": "indicator", "timeframe": "weekly",  "indicator": "wma", "period": 6,  "offset_periods": 0, "abs_offset": 2.0}
+      "right": {"type": "indicator", "timeframe": "weekly",  "indicator": "wma", "period": 6,  "offset_periods": 0, "pct_offset": 2.0}
     },
     {
       "left":  {"timeframe": "weekly",  "indicator": "wma", "period": 6,  "offset_periods": 0},
       "op":    ">",
-      "right": {"type": "indicator", "timeframe": "weekly",  "indicator": "wma", "period": 12, "offset_periods": 0, "abs_offset": 2.0}
+      "right": {"type": "indicator", "timeframe": "weekly",  "indicator": "wma", "period": 12, "offset_periods": 0, "pct_offset": 2.0}
     },
     {
       "left":  {"timeframe": "daily",   "indicator": "wma", "period": 1,  "offset_periods": 0},
       "op":    ">",
-      "right": {"type": "indicator", "timeframe": "daily",   "indicator": "wma", "period": 12, "offset_periods": 4, "abs_offset": 2.0}
+      "right": {"type": "indicator", "timeframe": "daily",   "indicator": "wma", "period": 12, "offset_periods": 4, "pct_offset": 2.0}
     },
     {
       "left":  {"timeframe": "daily",   "indicator": "wma", "period": 1,  "offset_periods": 0},
       "op":    ">",
-      "right": {"type": "indicator", "timeframe": "daily",   "indicator": "wma", "period": 20, "offset_periods": 2, "abs_offset": 2.0}
+      "right": {"type": "indicator", "timeframe": "daily",   "indicator": "wma", "period": 20, "offset_periods": 2, "pct_offset": 2.0}
     },
     {
       "left":  {"timeframe": "daily",   "indicator": "close", "period": 1, "offset_periods": 0},

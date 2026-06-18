@@ -74,7 +74,8 @@ def evaluate_condition(df_daily, df_weekly, df_monthly, condition: dict):
         right_val = _resolve_value(df_daily, df_weekly, df_monthly, right)
         if right_val is None:
             return None
-        right_val += float(right.get("abs_offset", 0.0))
+        pct = float(right.get("pct_offset", right.get("abs_offset", 0.0)))  # abs_offset kept for backward compat
+        right_val *= (1 + pct / 100)
 
     op_fn = _OPS.get(condition.get("op", ">"))
     if op_fn is None:
